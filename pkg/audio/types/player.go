@@ -86,7 +86,9 @@ type SampleRate uint32
 type Channel uint32
 
 type Encoding interface {
-	BytesPerAudioFrame() uint
+	BytesPerSample() uint
+	BytesForSecond() uint
+	BytesForDuration(d time.Duration) uint64
 }
 
 type EncodingPCM struct {
@@ -94,6 +96,14 @@ type EncodingPCM struct {
 	SampleRate
 }
 
-func (pcm EncodingPCM) BytesPerAudioFrame() uint {
-	panic("not implemented, yet")
+func (pcm EncodingPCM) BytesPerSample() uint {
+	return uint(pcm.PCMFormat.Size())
+}
+
+func (pcm EncodingPCM) BytesForSecond() uint {
+	return uint(pcm.BytesPerSample()) * uint(pcm.SampleRate)
+}
+
+func (pcm EncodingPCM) BytesForDuration(d time.Duration) uint64 {
+	return uint64(pcm.BytesForSecond()) * uint64(d.Microseconds()) / 1000000
 }

@@ -3,23 +3,22 @@ package pulseaudio
 import (
 	"fmt"
 	"io"
-	"time"
 
 	"github.com/jfreymuth/pulse"
 	"github.com/jfreymuth/pulse/proto"
 	"github.com/xaionaro-go/audio/pkg/audio/types"
 )
 
-type PlayerPCM struct {
+type RecorderPCM struct {
 }
 
-var _ types.PlayerPCM = (*PlayerPCM)(nil)
+var _ types.RecorderPCM = (*RecorderPCM)(nil)
 
-func NewPlayerPCM() PlayerPCM {
-	return PlayerPCM{}
+func NewRecorderPCM() RecorderPCM {
+	return RecorderPCM{}
 }
 
-func (PlayerPCM) Ping() error {
+func (RecorderPCM) Ping() error {
 	c, err := pulse.NewClient()
 	if err != nil {
 		return fmt.Errorf("unable to open a client to Pulse: %w", err)
@@ -28,16 +27,15 @@ func (PlayerPCM) Ping() error {
 	return nil
 }
 
-func (PlayerPCM) PlayPCM(
+func (RecorderPCM) RecordPCM(
 	sampleRate types.SampleRate,
 	channels types.Channel,
 	format types.PCMFormat,
-	bufferSize time.Duration,
-	rawReader io.Reader,
-) (_ types.PlayStream, _err error) {
-	reader, err := newPulseReader(format, rawReader)
+	rawWriter io.Writer,
+) (_ types.RecordStream, _err error) {
+	writer, err := newPulseWriter(format, rawWriter)
 	if err != nil {
-		return nil, fmt.Errorf("unable to initialize a reader for Pulse: %w", err)
+		return nil, fmt.Errorf("unable to initialize a writer for Pulse: %w", err)
 	}
 
 	c, err := pulse.NewClient()
@@ -59,11 +57,10 @@ func (PlayerPCM) PlayPCM(
 		return nil, fmt.Errorf("do not know how to configer %d channels", channels)
 	}
 
-	stream, err := c.NewPlayback(
-		reader,
-		pulse.PlaybackLatency(bufferSize.Seconds()),
-		pulse.PlaybackSampleRate(int(sampleRate)),
-		pulse.PlaybackChannels(chanMap),
+	stream, err := c.NewRecord(
+		writer,
+		pulse.RecordSampleRate(int(sampleRate)),
+		pulse.RecordChannels(chanMap),
 	)
 	if err != nil {
 		return nil, fmt.Errorf("unable to initialize a playback: %w", err)
@@ -74,15 +71,15 @@ func (PlayerPCM) PlayPCM(
 		return nil, fmt.Errorf("an error occurred during playback: %w", stream.Error())
 	}
 
-	return newPlayStream(c, stream), nil
+	return newRecordStream(c, stream), nil
 }
 
-type pulseReader struct {
+type pulseWriter struct {
 	pulseFormat byte
-	io.Reader
+	io.Writer
 }
 
-func newPulseReader(pcmFormat types.PCMFormat, reader io.Reader) (*pulseReader, error) {
+func newPulseWriter(pcmFormat types.PCMFormat, writer io.Writer) (*pulseWriter, error) {
 	var pulseFormat byte
 	switch pcmFormat {
 	case types.PCMFormatFloat32LE:
@@ -90,14 +87,14 @@ func newPulseReader(pcmFormat types.PCMFormat, reader io.Reader) (*pulseReader, 
 	default:
 		return nil, fmt.Errorf("received an unexpected format: %v", pcmFormat)
 	}
-	return &pulseReader{
+	return &pulseWriter{
 		pulseFormat: pulseFormat,
-		Reader:      reader,
+		Writer:      writer,
 	}, nil
 }
 
-var _ pulse.Reader = (*pulseReader)(nil)
+var _ pulse.Writer = (*pulseWriter)(nil)
 
-func (r pulseReader) Format() byte {
+func (r pulseWriter) Format() byte {
 	return r.pulseFormat
 }

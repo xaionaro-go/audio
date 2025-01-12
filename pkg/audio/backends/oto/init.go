@@ -6,11 +6,11 @@ import (
 )
 
 const (
-	Priority = 100
+	Priority = 50
 )
 
 func init() {
-	registry.RegisterFactory(Priority, PlayerPCMOtoFactory{})
+	registry.RegisterPlayerFactory(Priority, PlayerPCMOtoFactory{})
 }
 
 type PlayerPCMOtoFactory struct{}

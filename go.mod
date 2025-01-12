@@ -8,6 +8,7 @@ require (
 	github.com/jfreymuth/oggvorbis v1.0.5
 	github.com/jfreymuth/pulse v0.1.1
 	github.com/spf13/pflag v1.0.5
+	github.com/xaionaro-go/datacounter v1.0.4
 	github.com/xaionaro-go/observability v0.0.0-20250111142240-5d72f17a6d12
 )
 

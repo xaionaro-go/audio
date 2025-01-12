@@ -19,7 +19,7 @@ func (PlayerPCMDummy) PlayPCM(
 	format PCMFormat,
 	bufferSize time.Duration,
 	reader io.Reader,
-) (Stream, error) {
+) (PlayStream, error) {
 	return StreamDummy{}, nil
 }
 

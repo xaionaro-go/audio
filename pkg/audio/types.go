@@ -5,7 +5,10 @@ import (
 )
 
 type PlayerPCM = types.PlayerPCM
+type RecorderPCM = types.RecorderPCM
 type Stream = types.Stream
+type PlayStream = types.PlayStream
+type RecordStream = types.RecordStream
 
 type PCMFormat = types.PCMFormat
 

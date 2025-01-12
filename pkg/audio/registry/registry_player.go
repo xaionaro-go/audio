@@ -12,14 +12,14 @@ type PlayerPCMFactory interface {
 	NewPlayerPCM() types.PlayerPCM
 }
 
-type factoryWithPriority struct {
+type playerFactoryWithPriority struct {
 	Priority int
 	PlayerPCMFactory
 }
 
-var factoryRegistry = map[reflect.Type]factoryWithPriority{}
+var playerFactoryRegistry = map[reflect.Type]playerFactoryWithPriority{}
 
-func RegisterFactory(
+func RegisterPlayerFactory(
 	priority int,
 	playerPCMFactory PlayerPCMFactory,
 ) {
@@ -27,22 +27,22 @@ func RegisterFactory(
 	if t.Kind() == reflect.Ptr {
 		t = t.Elem()
 	}
-	if _, ok := factoryRegistry[t]; ok {
+	if _, ok := playerFactoryRegistry[t]; ok {
 		panic(fmt.Errorf("there is already registered a factory of PlayerPCM of type %v", t))
 	}
-	factoryRegistry[t] = factoryWithPriority{
+	playerFactoryRegistry[t] = playerFactoryWithPriority{
 		Priority:         priority,
 		PlayerPCMFactory: playerPCMFactory,
 	}
 }
 
-func Factories() []PlayerPCMFactory {
-	var factoriesWithPriorities []factoryWithPriority
-	for _, factory := range factoryRegistry {
+func PlayerFactories() []PlayerPCMFactory {
+	var factoriesWithPriorities []playerFactoryWithPriority
+	for _, factory := range playerFactoryRegistry {
 		factoriesWithPriorities = append(factoriesWithPriorities, factory)
 	}
 	sort.Slice(factoriesWithPriorities, func(i, j int) bool {
-		return factoriesWithPriorities[i].Priority < factoriesWithPriorities[j].Priority
+		return factoriesWithPriorities[i].Priority > factoriesWithPriorities[j].Priority
 	})
 
 	var factories []PlayerPCMFactory

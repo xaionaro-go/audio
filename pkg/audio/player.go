@@ -14,57 +14,57 @@ import (
 
 const BufferSize = 100 * time.Millisecond
 
-type Audio struct {
+type Player struct {
 	PlayerPCM
 }
 
-func NewAudio(playerPCM PlayerPCM) *Audio {
-	return &Audio{
+func NewPlayer(playerPCM PlayerPCM) *Player {
+	return &Player{
 		PlayerPCM: playerPCM,
 	}
 }
 
 var (
-	lastSuccessfulFactory       registry.PlayerPCMFactory
-	lastSuccessfulFactoryLocker sync.Mutex
+	lastSuccessfulPlayerFactory       registry.PlayerPCMFactory
+	lastSuccessfulPlayerFactoryLocker sync.Mutex
 )
 
-func getLastSuccessfulFactory() registry.PlayerPCMFactory {
-	lastSuccessfulFactoryLocker.Lock()
-	defer lastSuccessfulFactoryLocker.Unlock()
-	return lastSuccessfulFactory
+func getLastSuccessfulPlayerFactory() registry.PlayerPCMFactory {
+	lastSuccessfulPlayerFactoryLocker.Lock()
+	defer lastSuccessfulPlayerFactoryLocker.Unlock()
+	return lastSuccessfulPlayerFactory
 }
 
-func NewAudioAuto(
+func NewPlayerAuto(
 	ctx context.Context,
-) *Audio {
-	factory := getLastSuccessfulFactory()
+) *Player {
+	factory := getLastSuccessfulPlayerFactory()
 	if factory != nil {
 		player := factory.NewPlayerPCM()
 		if err := player.Ping(); err == nil {
-			return NewAudio(player)
+			return NewPlayer(player)
 		}
 	}
 
-	for _, factory := range registry.Factories() {
+	for _, factory := range registry.PlayerFactories() {
 		player := factory.NewPlayerPCM()
 		err := player.Ping()
 		logger.Debugf(ctx, "pinging PCM player %T result is %v", player, err)
 		if err == nil {
-			lastSuccessfulFactoryLocker.Lock()
-			defer lastSuccessfulFactoryLocker.Unlock()
-			lastSuccessfulFactory = factory
-			return NewAudio(player)
+			lastSuccessfulPlayerFactoryLocker.Lock()
+			defer lastSuccessfulPlayerFactoryLocker.Unlock()
+			lastSuccessfulPlayerFactory = factory
+			return NewPlayer(player)
 		}
 	}
 
 	logger.Infof(ctx, "was unable to initialize any PCM player")
-	return &Audio{
+	return &Player{
 		PlayerPCM: PlayerPCMDummy{},
 	}
 }
 
-func (a *Audio) PlayVorbis(rawReader io.Reader) (Stream, error) {
+func (a *Player) PlayVorbis(rawReader io.Reader) (PlayStream, error) {
 	oggReader, err := oggvorbis.NewReader(rawReader)
 	if err != nil {
 		return nil, fmt.Errorf("unable to initialize a vorbis reader: %w", err)
@@ -83,13 +83,13 @@ func (a *Audio) PlayVorbis(rawReader io.Reader) (Stream, error) {
 	return stream, nil
 }
 
-func (a *Audio) PlayPCM(
+func (a *Player) PlayPCM(
 	sampleRate SampleRate,
 	channels Channel,
 	pcmFormat PCMFormat,
 	bufferSize time.Duration,
 	pcmReader io.Reader,
-) (Stream, error) {
+) (PlayStream, error) {
 	return a.PlayerPCM.PlayPCM(
 		sampleRate,
 		channels,

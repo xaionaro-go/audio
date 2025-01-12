@@ -16,7 +16,7 @@ type PlayerPCM interface {
 		format PCMFormat,
 		bufferSize time.Duration,
 		reader io.Reader,
-	) (Stream, error)
+	) (PlayStream, error)
 }
 
 type PCMFormat uint

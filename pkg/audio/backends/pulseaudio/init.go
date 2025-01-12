@@ -6,15 +6,22 @@ import (
 )
 
 const (
-	Priority = 50
+	Priority = 100
 )
 
 func init() {
-	registry.RegisterFactory(Priority, PlayerPCMOtoFactory{})
+	registry.RegisterPlayerFactory(Priority, PlayerPCMPulseFactory{})
+	registry.RegisterRecorderFactory(Priority, RecorderPCMPulseFactory{})
 }
 
-type PlayerPCMOtoFactory struct{}
+type PlayerPCMPulseFactory struct{}
 
-func (PlayerPCMOtoFactory) NewPlayerPCM() types.PlayerPCM {
+func (PlayerPCMPulseFactory) NewPlayerPCM() types.PlayerPCM {
 	return NewPlayerPCM()
+}
+
+type RecorderPCMPulseFactory struct{}
+
+func (RecorderPCMPulseFactory) NewRecorderPCM() types.RecorderPCM {
+	return NewRecorderPCM()
 }

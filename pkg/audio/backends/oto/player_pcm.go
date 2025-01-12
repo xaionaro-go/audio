@@ -29,7 +29,7 @@ func (PlayerPCM) PlayPCM(
 	format types.PCMFormat,
 	bufferSize time.Duration,
 	reader io.Reader,
-) (types.Stream, error) {
+) (types.PlayStream, error) {
 	// Unfortunately, `oto` does not allow to initialize a context multiple times, so we cannot change the context every time different sampleRate, channels, format or bufferSize are given.
 	// As a result, we've just chosen reasonable values and expect them always :(
 	if bufferSize != BufferSize {

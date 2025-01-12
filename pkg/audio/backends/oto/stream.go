@@ -11,7 +11,7 @@ type Stream struct {
 	*oto.Player
 }
 
-var _ types.Stream = (*Stream)(nil)
+var _ types.PlayStream = (*Stream)(nil)
 
 func newStream(otoPlayer *oto.Player) *Stream {
 	return &Stream{

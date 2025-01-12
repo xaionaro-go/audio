@@ -6,21 +6,23 @@ import (
 	"github.com/jfreymuth/pulse"
 )
 
-type Stream struct {
+type PlayStream struct {
+	*pulse.Client
 	*pulse.PlaybackStream
 }
 
-func newStream(pulseStream *pulse.PlaybackStream) *Stream {
-	return &Stream{
+func newPlayStream(
+	client *pulse.Client,
+	pulseStream *pulse.PlaybackStream,
+) *PlayStream {
+	return &PlayStream{
+		Client:         client,
 		PlaybackStream: pulseStream,
 	}
 }
 
-func (stream *Stream) Drain() error {
-	stream.Start()
-	if err := stream.Drain(); err != nil {
-		return fmt.Errorf("unable to drain: %w", err)
-	}
+func (stream *PlayStream) Drain() error {
+	stream.PlaybackStream.Drain()
 	if stream.Error() != nil {
 		return fmt.Errorf("an error occurred during playback: %w", stream.Error())
 	}
@@ -30,13 +32,15 @@ func (stream *Stream) Drain() error {
 	return nil
 }
 
-func (stream *Stream) Close() (err error) {
+func (stream *PlayStream) Close() (err error) {
 	defer func() {
 		r := recover()
 		if r != nil {
 			err = fmt.Errorf("got a panic: %v", r)
 		}
 	}()
-	err = stream.Close()
+	stream.PlaybackStream.Stop()
+	stream.PlaybackStream.Close()
+	stream.Client.Close()
 	return
 }

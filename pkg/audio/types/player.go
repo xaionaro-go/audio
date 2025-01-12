@@ -105,5 +105,5 @@ func (pcm EncodingPCM) BytesForSecond() uint {
 }
 
 func (pcm EncodingPCM) BytesForDuration(d time.Duration) uint64 {
-	return uint64(pcm.BytesForSecond()) * uint64(d.Microseconds()) / 1000000
+	return (uint64(pcm.SampleRate) * uint64(d.Microseconds()) / 1000000) * uint64(pcm.BytesPerSample())
 }

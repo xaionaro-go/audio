@@ -10,11 +10,11 @@ const (
 )
 
 func init() {
-	registry.RegisterPlayerFactory(Priority, PlayerPCMOtoFactory{})
+	registry.RegisterPlayerFactory(Priority, PlayerPCMFactory{})
 }
 
-type PlayerPCMOtoFactory struct{}
+type PlayerPCMFactory struct{}
 
-func (PlayerPCMOtoFactory) NewPlayerPCM() types.PlayerPCM {
+func (PlayerPCMFactory) NewPlayerPCM() types.PlayerPCM {
 	return NewPlayerPCM()
 }

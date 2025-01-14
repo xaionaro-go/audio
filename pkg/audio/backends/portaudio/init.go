@@ -1,4 +1,4 @@
-package pulseaudio
+package portaudio
 
 import (
 	"github.com/xaionaro-go/audio/pkg/audio/registry"
@@ -6,7 +6,7 @@ import (
 )
 
 const (
-	Priority = 100
+	Priority = 60
 )
 
 func init() {

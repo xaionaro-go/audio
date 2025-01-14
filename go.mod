@@ -5,12 +5,15 @@ go 1.22.2
 require (
 	github.com/ebitengine/oto/v3 v3.3.2
 	github.com/facebookincubator/go-belt v0.0.0-20240804203001-846c4409d41c
+	github.com/gordonklaus/portaudio v0.0.0-20230709114228-aafa478834f5
+	github.com/hashicorp/go-multierror v1.1.1
 	github.com/jfreymuth/oggvorbis v1.0.5
 	github.com/jfreymuth/pulse v0.1.1
 	github.com/josharian/fvad v0.0.0-20201126043145-6cba2db1e3b8
 	github.com/spf13/pflag v1.0.5
 	github.com/xaionaro-go/datacounter v1.0.4
 	github.com/xaionaro-go/observability v0.0.0-20250111142240-5d72f17a6d12
+	golang.org/x/sync v0.8.0
 )
 
 require (
@@ -21,6 +24,7 @@ require (
 	github.com/go-ng/xatomic v0.0.0-20230519181013-85c0ec87e55f // indirect
 	github.com/go-ng/xsort v0.0.0-20220617174223-1d146907bccc // indirect
 	github.com/google/uuid v1.6.0 // indirect
+	github.com/hashicorp/errwrap v1.0.0 // indirect
 	github.com/huandu/go-tls v0.0.0-20200109070953-6f75fb441850 // indirect
 	github.com/jfreymuth/vorbis v1.0.2 // indirect
 	github.com/klauspost/cpuid/v2 v2.2.7 // indirect

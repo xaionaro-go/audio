@@ -3,7 +3,7 @@ package main
 import (
 	"context"
 	_ "embed"
-	"io"
+	"os"
 	"time"
 
 	"github.com/facebookincubator/go-belt"
@@ -33,10 +33,7 @@ func main() {
 	logger.Infof(ctx, "starting...")
 	recorder := audio.NewRecorderAuto(ctx)
 	defer recorder.Close()
-	player := audio.NewPlayerAuto(ctx)
-	defer player.Close()
-	r, w := io.Pipe()
-	wc := datacounter.NewWriterCounter(w)
+	wc := datacounter.NewWriterCounter(os.Stdout)
 	logger.Tracef(ctx, "recorder.RecordPCM")
 	streamRecord, err := recorder.RecordPCM(ctx, 48000, 2, audio.PCMFormatFloat32LE, wc)
 	logger.Tracef(ctx, "/recorder.RecordPCM: %v", err)
@@ -59,16 +56,6 @@ func main() {
 			}
 		}
 	})
-	logger.Tracef(ctx, "player.PlayPCM")
-	streamPlay, err := player.PlayPCM(ctx, 48000, 2, audio.PCMFormatFloat32LE, 100*time.Millisecond, r)
-	logger.Tracef(ctx, "/player.PlayPCM: %v", err)
-	assertNoError(err)
-	defer streamPlay.Close()
-	logger.Infof(ctx, "started (%T -> %T)", recorder.RecorderPCM, player.PlayerPCM)
-	streamPlay.Drain()
-	defer func() {
-		assertNoError(streamPlay.Close())
-	}()
 	<-context.Background().Done()
 }
 

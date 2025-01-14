@@ -1,12 +1,15 @@
 package types
 
 import (
+	"context"
 	"io"
 )
 
 type RecorderPCM interface {
-	Ping() error
+	io.Closer
+	Ping(context.Context) error
 	RecordPCM(
+		ctx context.Context,
 		sampleRate SampleRate,
 		channels Channel,
 		format PCMFormat,

@@ -1,6 +1,7 @@
 package types
 
 import (
+	"context"
 	"fmt"
 	"io"
 	"math"
@@ -9,8 +10,10 @@ import (
 )
 
 type PlayerPCM interface {
-	Ping() error
+	io.Closer
+	Ping(context.Context) error
 	PlayPCM(
+		ctx context.Context,
 		sampleRate SampleRate,
 		channels Channel,
 		format PCMFormat,

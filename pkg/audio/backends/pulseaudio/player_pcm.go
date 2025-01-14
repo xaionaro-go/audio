@@ -1,6 +1,7 @@
 package pulseaudio
 
 import (
+	"context"
 	"fmt"
 	"io"
 	"time"
@@ -11,24 +12,33 @@ import (
 )
 
 type PlayerPCM struct {
+	PulseClient *pulse.Client
 }
 
 var _ types.PlayerPCM = (*PlayerPCM)(nil)
 
-func NewPlayerPCM() PlayerPCM {
-	return PlayerPCM{}
-}
-
-func (PlayerPCM) Ping() error {
+func NewPlayerPCM() (*PlayerPCM, error) {
 	c, err := pulse.NewClient()
 	if err != nil {
-		return fmt.Errorf("unable to open a client to Pulse: %w", err)
+		return nil, fmt.Errorf("unable to open a client to Pulse: %w", err)
 	}
-	defer c.Close()
+	return &PlayerPCM{
+		PulseClient: c,
+	}, nil
+}
+
+func (p *PlayerPCM) Close() error {
+	p.PulseClient.Close()
 	return nil
 }
 
-func (PlayerPCM) PlayPCM(
+func (p *PlayerPCM) Ping(context.Context) error {
+	_, err := p.PulseClient.DefaultSink()
+	return err
+}
+
+func (p *PlayerPCM) PlayPCM(
+	ctx context.Context,
 	sampleRate types.SampleRate,
 	channels types.Channel,
 	format types.PCMFormat,
@@ -40,16 +50,6 @@ func (PlayerPCM) PlayPCM(
 		return nil, fmt.Errorf("unable to initialize a reader for Pulse: %w", err)
 	}
 
-	c, err := pulse.NewClient()
-	if err != nil {
-		return nil, fmt.Errorf("unable to open a client to Pulse: %w", err)
-	}
-	defer func() {
-		if _err != nil {
-			c.Close()
-		}
-	}()
-
 	chanMap := proto.ChannelMap{proto.ChannelMono}
 	switch channels {
 	case 1:
@@ -59,7 +59,7 @@ func (PlayerPCM) PlayPCM(
 		return nil, fmt.Errorf("do not know how to configer %d channels", channels)
 	}
 
-	stream, err := c.NewPlayback(
+	stream, err := p.PulseClient.NewPlayback(
 		reader,
 		pulse.PlaybackLatency(bufferSize.Seconds()),
 		pulse.PlaybackSampleRate(int(sampleRate)),
@@ -74,7 +74,7 @@ func (PlayerPCM) PlayPCM(
 		return nil, fmt.Errorf("an error occurred during playback: %w", stream.Error())
 	}
 
-	return newPlayStream(c, stream), nil
+	return newPlayStream(p.PulseClient, stream), nil
 }
 
 type pulseReader struct {

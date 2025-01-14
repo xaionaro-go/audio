@@ -9,7 +9,7 @@ import (
 )
 
 type PlayerPCMFactory interface {
-	NewPlayerPCM() types.PlayerPCM
+	NewPlayerPCM() (types.PlayerPCM, error)
 }
 
 type playerFactoryWithPriority struct {

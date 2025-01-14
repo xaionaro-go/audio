@@ -16,12 +16,12 @@ func init() {
 
 type PlayerPCMFactory struct{}
 
-func (PlayerPCMFactory) NewPlayerPCM() types.PlayerPCM {
+func (PlayerPCMFactory) NewPlayerPCM() (types.PlayerPCM, error) {
 	return NewPlayerPCM()
 }
 
 type RecorderPCMFactory struct{}
 
-func (RecorderPCMFactory) NewRecorderPCM() types.RecorderPCM {
+func (RecorderPCMFactory) NewRecorderPCM() (types.RecorderPCM, error) {
 	return NewRecorderPCM()
 }

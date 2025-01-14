@@ -1,6 +1,7 @@
 package pulseaudio
 
 import (
+	"context"
 	"fmt"
 	"io"
 
@@ -10,24 +11,33 @@ import (
 )
 
 type RecorderPCM struct {
+	PulseClient *pulse.Client
 }
 
 var _ types.RecorderPCM = (*RecorderPCM)(nil)
 
-func NewRecorderPCM() RecorderPCM {
-	return RecorderPCM{}
-}
-
-func (RecorderPCM) Ping() error {
+func NewRecorderPCM() (*RecorderPCM, error) {
 	c, err := pulse.NewClient()
 	if err != nil {
-		return fmt.Errorf("unable to open a client to Pulse: %w", err)
+		return nil, fmt.Errorf("unable to open a client to Pulse: %w", err)
 	}
-	defer c.Close()
+	return &RecorderPCM{
+		PulseClient: c,
+	}, nil
+}
+
+func (r *RecorderPCM) Close() error {
+	r.PulseClient.Close()
 	return nil
 }
 
-func (RecorderPCM) RecordPCM(
+func (r *RecorderPCM) Ping(context.Context) error {
+	_, err := r.PulseClient.DefaultSource()
+	return err
+}
+
+func (r *RecorderPCM) RecordPCM(
+	ctx context.Context,
 	sampleRate types.SampleRate,
 	channels types.Channel,
 	format types.PCMFormat,
@@ -38,16 +48,6 @@ func (RecorderPCM) RecordPCM(
 		return nil, fmt.Errorf("unable to initialize a writer for Pulse: %w", err)
 	}
 
-	c, err := pulse.NewClient()
-	if err != nil {
-		return nil, fmt.Errorf("unable to open a client to Pulse: %w", err)
-	}
-	defer func() {
-		if _err != nil {
-			c.Close()
-		}
-	}()
-
 	chanMap := proto.ChannelMap{proto.ChannelMono}
 	switch channels {
 	case 1:
@@ -57,7 +57,7 @@ func (RecorderPCM) RecordPCM(
 		return nil, fmt.Errorf("do not know how to configer %d channels", channels)
 	}
 
-	stream, err := c.NewRecord(
+	stream, err := r.PulseClient.NewRecord(
 		writer,
 		pulse.RecordSampleRate(int(sampleRate)),
 		pulse.RecordChannels(chanMap),
@@ -71,7 +71,7 @@ func (RecorderPCM) RecordPCM(
 		return nil, fmt.Errorf("an error occurred during playback: %w", stream.Error())
 	}
 
-	return newRecordStream(c, stream), nil
+	return newRecordStream(r.PulseClient, stream), nil
 }
 
 type pulseWriter struct {

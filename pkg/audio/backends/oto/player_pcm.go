@@ -1,29 +1,44 @@
 package oto
 
 import (
+	"context"
 	"fmt"
 	"io"
 	"time"
 
+	"github.com/ebitengine/oto/v3"
 	"github.com/xaionaro-go/audio/pkg/audio/resampler"
 	"github.com/xaionaro-go/audio/pkg/audio/types"
 )
 
 type PlayerPCM struct {
+	OtoCtx *oto.Context
 }
 
 var _ types.PlayerPCM = (*PlayerPCM)(nil)
 
-func NewPlayerPCM() PlayerPCM {
-	return PlayerPCM{}
+func NewPlayerPCM() (*PlayerPCM, error) {
+	otoCtx, err := getOtoContext()
+	if err != nil {
+		return nil, fmt.Errorf("unable to get an oto context: %w", err)
+	}
+
+	return &PlayerPCM{
+		OtoCtx: otoCtx,
+	}, nil
 }
 
-func (PlayerPCM) Ping() error {
+func (p *PlayerPCM) Close() error {
+	return nil
+}
+
+func (*PlayerPCM) Ping(context.Context) error {
 	// do not know how to do that, yet
 	return nil
 }
 
-func (PlayerPCM) PlayPCM(
+func (p *PlayerPCM) PlayPCM(
+	ctx context.Context,
 	sampleRate types.SampleRate,
 	channels types.Channel,
 	format types.PCMFormat,
@@ -53,12 +68,7 @@ func (PlayerPCM) PlayPCM(
 		}
 	}
 
-	otoCtx, err := getOtoContext()
-	if err != nil {
-		return nil, fmt.Errorf("unable to get an oto context: %w", err)
-	}
-
-	player := otoCtx.NewPlayer(reader)
+	player := p.OtoCtx.NewPlayer(reader)
 	player.Play()
 
 	return newStream(player), nil

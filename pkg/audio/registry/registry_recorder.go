@@ -9,7 +9,7 @@ import (
 )
 
 type RecorderPCMFactory interface {
-	NewRecorderPCM() types.RecorderPCM
+	NewRecorderPCM() (types.RecorderPCM, error)
 }
 
 type recorderFactoryWithPriority struct {

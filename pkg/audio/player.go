@@ -8,6 +8,7 @@ import (
 	"time"
 
 	"github.com/facebookincubator/go-belt/tool/logger"
+	"github.com/hashicorp/go-multierror"
 	"github.com/jfreymuth/oggvorbis"
 	"github.com/xaionaro-go/audio/pkg/audio/registry"
 )
@@ -40,37 +41,53 @@ func NewPlayerAuto(
 ) *Player {
 	factory := getLastSuccessfulPlayerFactory()
 	if factory != nil {
-		player := factory.NewPlayerPCM()
-		if err := player.Ping(); err == nil {
-			return NewPlayer(player)
-		}
-	}
-
-	for _, factory := range registry.PlayerFactories() {
-		player := factory.NewPlayerPCM()
-		err := player.Ping()
-		logger.Debugf(ctx, "pinging PCM player %T result is %v", player, err)
+		player, err := factory.NewPlayerPCM()
 		if err == nil {
-			lastSuccessfulPlayerFactoryLocker.Lock()
-			defer lastSuccessfulPlayerFactoryLocker.Unlock()
-			lastSuccessfulPlayerFactory = factory
-			return NewPlayer(player)
+			if err := player.Ping(ctx); err == nil {
+				return NewPlayer(player)
+			}
 		}
 	}
 
-	logger.Infof(ctx, "was unable to initialize any PCM player")
+	var mErr *multierror.Error
+	for _, factory := range registry.PlayerFactories() {
+		player, err := factory.NewPlayerPCM()
+		logger.Debugf(ctx, "initializing player %T result is %v", player, err)
+		if err != nil {
+			mErr = multierror.Append(mErr, fmt.Errorf("unable to initialize %T: %w", player, err))
+			continue
+		}
+
+		err = player.Ping(ctx)
+		logger.Debugf(ctx, "pinging PCM player %T result is %v", player, err)
+		if err != nil {
+			mErr = multierror.Append(mErr, fmt.Errorf("unable to ping %T: %w", player, err))
+			continue
+		}
+
+		lastSuccessfulPlayerFactoryLocker.Lock()
+		defer lastSuccessfulPlayerFactoryLocker.Unlock()
+		lastSuccessfulPlayerFactory = factory
+		return NewPlayer(player)
+	}
+
+	logger.Infof(ctx, "was unable to initialize any PCM player: %v", mErr.ErrorOrNil())
 	return &Player{
 		PlayerPCM: PlayerPCMDummy{},
 	}
 }
 
-func (a *Player) PlayVorbis(rawReader io.Reader) (PlayStream, error) {
+func (a *Player) PlayVorbis(
+	ctx context.Context,
+	rawReader io.Reader,
+) (PlayStream, error) {
 	oggReader, err := oggvorbis.NewReader(rawReader)
 	if err != nil {
 		return nil, fmt.Errorf("unable to initialize a vorbis reader: %w", err)
 	}
 
 	stream, err := a.PlayerPCM.PlayPCM(
+		ctx,
 		SampleRate(oggReader.SampleRate()),
 		Channel(oggReader.Channels()),
 		PCMFormatFloat32LE,
@@ -84,6 +101,7 @@ func (a *Player) PlayVorbis(rawReader io.Reader) (PlayStream, error) {
 }
 
 func (a *Player) PlayPCM(
+	ctx context.Context,
 	sampleRate SampleRate,
 	channels Channel,
 	pcmFormat PCMFormat,
@@ -91,6 +109,7 @@ func (a *Player) PlayPCM(
 	pcmReader io.Reader,
 ) (PlayStream, error) {
 	return a.PlayerPCM.PlayPCM(
+		ctx,
 		sampleRate,
 		channels,
 		pcmFormat,

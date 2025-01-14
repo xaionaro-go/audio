@@ -2,6 +2,8 @@ module github.com/xaionaro-go/audio
 
 go 1.22.2
 
+replace github.com/gordonklaus/portaudio v0.0.0-20230709114228-aafa478834f5 => github.com/KarpelesLab/static-portaudio v0.6.190600
+
 require (
 	github.com/ebitengine/oto/v3 v3.3.2
 	github.com/facebookincubator/go-belt v0.0.0-20240804203001-846c4409d41c
@@ -13,7 +15,6 @@ require (
 	github.com/spf13/pflag v1.0.5
 	github.com/xaionaro-go/datacounter v1.0.4
 	github.com/xaionaro-go/observability v0.0.0-20250111142240-5d72f17a6d12
-	golang.org/x/sync v0.8.0
 )
 
 require (

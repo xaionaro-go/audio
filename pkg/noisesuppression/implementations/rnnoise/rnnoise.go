@@ -77,7 +77,7 @@ func (s *RNNoise) Encoding(ctx context.Context) (audio.Encoding, error) {
 	default:
 		return nil, fmt.Errorf("unable to detect endianness of this computer")
 	}
-	return &audio.EncodingPCM{
+	return audio.EncodingPCM{
 		PCMFormat:  pcmFormat,
 		SampleRate: 48_000,
 	}, nil

@@ -47,7 +47,7 @@ var pcmSampleConvertMap = [types.EndOfPCMFormat + 1] /*from*/ [types.EndOfPCMFor
 			copy(dst, src)
 		},
 		types.PCMFormatFloat32LE: func(dst, src []byte) {
-			v := float32(src[0])
+			v := float32(src[0]/math.MaxUint8) - 0.5
 			binary.LittleEndian.PutUint32(dst, math.Float32bits(v))
 		},
 	},
@@ -55,13 +55,18 @@ var pcmSampleConvertMap = [types.EndOfPCMFormat + 1] /*from*/ [types.EndOfPCMFor
 		types.PCMFormatS16LE: func(dst, src []byte) {
 			copy(dst, src)
 		},
+		types.PCMFormatFloat32LE: func(dst, src []byte) {
+			i16 := int16(binary.LittleEndian.Uint16(src))
+			v := float32(i16 / math.MaxInt16)
+			binary.LittleEndian.PutUint32(dst, math.Float32bits(v))
+		},
 	},
 	types.PCMFormatFloat32LE: {
 		types.PCMFormatFloat32LE: func(dst, src []byte) {
 			copy(dst, src)
 		},
 		types.PCMFormatS16LE: func(dst, src []byte) {
-			f32 := math.Float32frombits(binary.LittleEndian.Uint32(src)) * 0x8000
+			f32 := math.Float32frombits(binary.LittleEndian.Uint32(src)) * math.MaxInt16
 			binary.LittleEndian.PutUint16(dst, uint16(f32))
 		},
 	},

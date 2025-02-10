@@ -71,7 +71,7 @@ func main() {
 
 		enc, err := noiseSuppressor.Encoding(ctx)
 		assertNoError(err)
-		encPCM := enc.(*audio.EncodingPCM)
+		encPCM := enc.(audio.EncodingPCM)
 
 		if encPCM.PCMFormat != audio.PCMFormatFloat32LE {
 			panic(fmt.Errorf("unexpected PCM format on the noise suppression: %v", encPCM.PCMFormat))

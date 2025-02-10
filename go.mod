@@ -9,6 +9,7 @@ require (
 	github.com/facebookincubator/go-belt v0.0.0-20240804203001-846c4409d41c
 	github.com/gordonklaus/portaudio v0.0.0-20230709114228-aafa478834f5
 	github.com/hashicorp/go-multierror v1.1.1
+	github.com/iamcalledrob/circular v0.0.0-20230705185033-0e97eae4da73
 	github.com/jfreymuth/oggvorbis v1.0.5
 	github.com/jfreymuth/pulse v0.1.1
 	github.com/josharian/fvad v0.0.0-20201126043145-6cba2db1e3b8

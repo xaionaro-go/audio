@@ -28,6 +28,8 @@ github.com/hashicorp/go-multierror v1.1.1 h1:H5DkEtf6CXdFp0N0Em5UCwQpXMWke8IA0+l
 github.com/hashicorp/go-multierror v1.1.1/go.mod h1:iw975J/qwKPdAO1clOe2L8331t/9/fmwbPZ6JB6eMoM=
 github.com/huandu/go-tls v0.0.0-20200109070953-6f75fb441850 h1:e6Xuec7psx1wWcYffIzWzhXBBFOJ526073fie9Cc79c=
 github.com/huandu/go-tls v0.0.0-20200109070953-6f75fb441850/go.mod h1:WeItecBdaIdUBRb7cSMMk+rq41iFKhf6Q9mDRDpbdec=
+github.com/iamcalledrob/circular v0.0.0-20230705185033-0e97eae4da73 h1:yI5vRcr4h8ZBk1ciaLI6U5+P6qYHEnoJ1DUvZcd8pkA=
+github.com/iamcalledrob/circular v0.0.0-20230705185033-0e97eae4da73/go.mod h1:I0UgaEt672acmOr73FfwnjOs566UbHArB6kDQqcBCAo=
 github.com/jfreymuth/oggvorbis v1.0.5 h1:u+Ck+R0eLSRhgq8WTmffYnrVtSztJcYrl588DM4e3kQ=
 github.com/jfreymuth/oggvorbis v1.0.5/go.mod h1:1U4pqWmghcoVsCJJ4fRBKv9peUJMBHixthRlBeD6uII=
 github.com/jfreymuth/pulse v0.1.1 h1:9WLNBNCijmtZ14ZJpatgJPu/NjwAl3TIKItSFnTh+9A=

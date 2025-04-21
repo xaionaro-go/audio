@@ -11,6 +11,7 @@ And it has various modules for audio processing:
 * Basics: [`resampler`](./pkg/audio/resampler), [`planar`](./pkg/audio/planar).
 * [Noise suppression](./pkg/noisesuppression), also in [streaming mode](./pkg/noisesuppressionstream).
 * [Voice Activity Detector](./pkg/vad)
+* For speech processing see also [github.com/xaionaro-go/speech](https://github.com/xaionaro-go/speech).
 
 # Examples
 

@@ -5,6 +5,7 @@ go 1.22.2
 replace github.com/gordonklaus/portaudio v0.0.0-20230709114228-aafa478834f5 => github.com/KarpelesLab/static-portaudio v0.6.190600
 
 require (
+	github.com/davecgh/go-spew v1.1.2-0.20180830191138-d8f796af33cc
 	github.com/ebitengine/oto/v3 v3.3.2
 	github.com/facebookincubator/go-belt v0.0.0-20240804203001-846c4409d41c
 	github.com/gordonklaus/portaudio v0.0.0-20230709114228-aafa478834f5
@@ -21,7 +22,6 @@ require (
 
 require (
 	github.com/DataDog/gostackparse v0.7.0 // indirect
-	github.com/davecgh/go-spew v1.1.2-0.20180830191138-d8f796af33cc // indirect
 	github.com/ebitengine/purego v0.8.0 // indirect
 	github.com/go-ng/slices v0.0.0-20230703171042-6195d35636a2 // indirect
 	github.com/go-ng/sort v0.0.0-20220617173827-2cc7cd04f7c7 // indirect

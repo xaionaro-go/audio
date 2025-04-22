@@ -77,6 +77,7 @@ func NewPlayerAuto(
 	}
 }
 
+// TODO: split this away; player for every format should be in a separate package
 func (a *Player) PlayVorbis(
 	ctx context.Context,
 	rawReader io.Reader,

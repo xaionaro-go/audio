@@ -2,7 +2,6 @@ package syncer
 
 import (
 	"context"
-	"time"
 
 	"github.com/xaionaro-go/audio/pkg/audio"
 )
@@ -10,11 +9,14 @@ import (
 type Syncer interface {
 	audio.AbstractAnalyzer
 
+	// CalculateShiftBetween returns the amount of samples that
+	// needs to be shifted by, to get a comparison track synced
+	// with the reference track.
 	CalculateShiftBetween(
 		ctx context.Context,
 		referenceTrack []byte,
 		comparisonTracks ...[]byte,
-	) ([]time.Duration, error)
+	) ([]int, error)
 }
 
 /* for easier copy&paste:
@@ -32,11 +34,14 @@ func () Channels(
 ) (audio.Channel, error) {
 }
 
+// CalculateShiftBetween returns the amount of samples that
+// needs to be shifted by, to get a comparison track synced
+// with the reference track.
 func () CalculateShiftBetween(
 	ctx context.Context,
 	referenceTrack []byte,
 	comparisonTracks ...[]byte,
-) ([]time.Duration, error) {
+) ([]int, error) {
 }
 
 */

@@ -1,5 +1,4 @@
 {
-    "go.toolsEnvVars": {
-    },
+    "go.toolsEnvVars": {},
     "go.buildTags": "rnnoise"
 }

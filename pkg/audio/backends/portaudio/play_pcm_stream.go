@@ -69,19 +69,19 @@ func (s *PlayPCMStream) init(
 	}
 
 	s.WaitGroup.Add(1)
-	observability.Go(ctx, func() {
+	observability.Go(ctx, func(ctx context.Context) {
 		defer s.WaitGroup.Done()
 		<-ctx.Done()
 		s.Close()
 	})
 	s.WaitGroup.Add(1)
-	observability.Go(ctx, func() {
+	observability.Go(ctx, func(ctx context.Context) {
 		defer s.WaitGroup.Done()
 		defer s.CancelFunc()
 		s.readerLoop(ctx)
 	})
 	s.WaitGroup.Add(1)
-	observability.Go(ctx, func() {
+	observability.Go(ctx, func(ctx context.Context) {
 		defer s.WaitGroup.Done()
 		defer s.CancelFunc()
 		s.writerLoop(ctx)

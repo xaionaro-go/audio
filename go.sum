@@ -42,6 +42,8 @@ github.com/josharian/fvad v0.0.0-20201126043145-6cba2db1e3b8 h1:8OSd36BaCHb76TXP
 github.com/josharian/fvad v0.0.0-20201126043145-6cba2db1e3b8/go.mod h1:/rDWBCVPGpf3w56sHTHpBBKe9lSObetTlIRemtfmvvs=
 github.com/klauspost/cpuid/v2 v2.2.7 h1:ZWSB3igEs+d0qvnxR/ZBzXVmxkgt8DdzP6m9pfuVLDM=
 github.com/klauspost/cpuid/v2 v2.2.7/go.mod h1:Lcz8mBdAVJIBVzewtcLocK12l3Y+JytZYpaMropDUws=
+github.com/mjibson/go-dsp v0.0.0-20180508042940-11479a337f12 h1:dd7vnTDfjtwCETZDrRe+GPYNLA1jBtbZeyfyE8eZCyk=
+github.com/mjibson/go-dsp v0.0.0-20180508042940-11479a337f12/go.mod h1:i/KKcxEWEO8Yyl11DYafRPKOPVYTrhxiTRigjtEEXZU=
 github.com/phuslu/goid v1.0.1 h1:74sob8Rch+WJCROvccSbvxn0Pz5RBvIf57MvesjbPNo=
 github.com/phuslu/goid v1.0.1/go.mod h1:txc2fUIdrdnn+v9Vq+QpiPQ3dnrXEchjoVDgic+r+L0=
 github.com/pmezard/go-difflib v1.0.0/go.mod h1:iKH77koFhYxTK1pcRnkKkqfTogsbg7gZNVY4sRDYZ/4=

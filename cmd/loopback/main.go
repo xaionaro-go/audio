@@ -38,7 +38,7 @@ func main() {
 	defer belt.Flush(ctx)
 
 	if *netPprofAddr != "" {
-		observability.Go(ctx, func() { l.Error(http.ListenAndServe(*netPprofAddr, nil)) })
+		observability.Go(ctx, func(ctx context.Context) { l.Error(http.ListenAndServe(*netPprofAddr, nil)) })
 	}
 
 	logger.Infof(ctx, "starting...")
@@ -85,7 +85,7 @@ func main() {
 		assertNoError(err)
 	}
 
-	observability.Go(ctx, func() {
+	observability.Go(ctx, func(ctx context.Context) {
 		logger.Tracef(ctx, "started the traffic count printer loop")
 		t := time.NewTicker(time.Second)
 		for {

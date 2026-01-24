@@ -184,7 +184,7 @@ func noiseSuppressMultipleChannels(
 		denoiseState := denoiseStates[ch]
 		data := buffer[ch*oneChanSize : (ch+1)*oneChanSize]
 		wg.Add(1)
-		observability.Go(ctx, func() {
+		observability.Go(ctx, func(ctx context.Context) {
 			defer wg.Done()
 			vadProb := noiseSuppressOneChannel(ctx, denoiseState, data, data)
 			locker.Lock()

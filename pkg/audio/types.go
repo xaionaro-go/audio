@@ -33,3 +33,7 @@ type Encoding = types.Encoding
 type EncodingPCM = types.EncodingPCM
 type SampleRate = types.SampleRate
 type Channel = types.Channel
+
+func PCMFormatFromString(in string) PCMFormat {
+	return types.PCMFormatFromString(in)
+}

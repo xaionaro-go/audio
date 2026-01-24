@@ -41,7 +41,7 @@ func main() {
 	defer func() {
 		assertNoError(streamRecord.Close())
 	}()
-	observability.Go(ctx, func() {
+	observability.Go(ctx, func(ctx context.Context) {
 		logger.Tracef(ctx, "started the traffic count printer loop")
 		t := time.NewTicker(time.Second)
 		for {

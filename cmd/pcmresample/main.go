@@ -45,7 +45,7 @@ func main() {
 	defer belt.Flush(ctx)
 
 	if *netPprofAddr != "" {
-		observability.Go(ctx, func() { l.Error(http.ListenAndServe(*netPprofAddr, nil)) })
+		observability.Go(ctx, func(ctx context.Context) { l.Error(http.ListenAndServe(*netPprofAddr, nil)) })
 	}
 
 	srcFormat := types.PCMFormatFromString(*srcFormatFlag)

@@ -27,7 +27,6 @@ type precalculated struct {
 	inNumAvg        uint
 	outNumRepeat    uint
 	outDistanceStep uint64
-	convert         func(dst, src []byte)
 }
 
 type Resampler struct {
@@ -41,35 +40,96 @@ type Resampler struct {
 	precalculated
 }
 
-var pcmSampleConvertMap = [types.EndOfPCMFormat + 1] /*from*/ [types.EndOfPCMFormat + 1] /*to*/ func(dst, src []byte){
-	types.PCMFormatU8: {
-		types.PCMFormatU8: func(dst, src []byte) {
-			copy(dst, src)
-		},
-		types.PCMFormatFloat32LE: func(dst, src []byte) {
-			v := float32(src[0]/math.MaxUint8) - 0.5
-			binary.LittleEndian.PutUint32(dst, math.Float32bits(v))
-		},
-	},
-	types.PCMFormatS16LE: {
-		types.PCMFormatS16LE: func(dst, src []byte) {
-			copy(dst, src)
-		},
-		types.PCMFormatFloat32LE: func(dst, src []byte) {
-			i16 := int16(binary.LittleEndian.Uint16(src))
-			v := float32(i16 / math.MaxInt16)
-			binary.LittleEndian.PutUint32(dst, math.Float32bits(v))
-		},
-	},
-	types.PCMFormatFloat32LE: {
-		types.PCMFormatFloat32LE: func(dst, src []byte) {
-			copy(dst, src)
-		},
-		types.PCMFormatS16LE: func(dst, src []byte) {
-			f32 := math.Float32frombits(binary.LittleEndian.Uint32(src)) * math.MaxInt16
-			binary.LittleEndian.PutUint16(dst, uint16(f32))
-		},
-	},
+func getFloat64(f types.PCMFormat, p []byte) float64 {
+	switch f {
+	case types.PCMFormatU8:
+		return (float64(p[0]) - 128) / 128
+	case types.PCMFormatS16LE:
+		return float64(int16(binary.LittleEndian.Uint16(p))) / 32768
+	case types.PCMFormatS16BE:
+		return float64(int16(binary.BigEndian.Uint16(p))) / 32768
+	case types.PCMFormatS24LE:
+		val := int32(uint32(p[0]) | uint32(p[1])<<8 | uint32(p[2])<<16)
+		if val&0x800000 != 0 {
+			val |= -16777216
+		}
+		return float64(val) / 8388608
+	case types.PCMFormatS24BE:
+		val := int32(uint32(p[2]) | uint32(p[1])<<8 | uint32(p[0])<<16)
+		if val&0x800000 != 0 {
+			val |= -16777216
+		}
+		return float64(val) / 8388608
+	case types.PCMFormatS32LE:
+		return float64(int32(binary.LittleEndian.Uint32(p))) / 2147483648
+	case types.PCMFormatS32BE:
+		return float64(int32(binary.BigEndian.Uint32(p))) / 2147483648
+	case types.PCMFormatS64LE:
+		return float64(int64(binary.LittleEndian.Uint64(p))) / 9223372036854775808
+	case types.PCMFormatS64BE:
+		return float64(int64(binary.BigEndian.Uint64(p))) / 9223372036854775808
+	case types.PCMFormatFloat32LE:
+		return float64(math.Float32frombits(binary.LittleEndian.Uint32(p)))
+	case types.PCMFormatFloat32BE:
+		return float64(math.Float32frombits(binary.BigEndian.Uint32(p)))
+	case types.PCMFormatFloat64LE:
+		return math.Float64frombits(binary.LittleEndian.Uint64(p))
+	case types.PCMFormatFloat64BE:
+		return math.Float64frombits(binary.BigEndian.Uint64(p))
+	default:
+		panic(fmt.Sprintf("unknown format: %v", f))
+	}
+}
+
+func setFloat64(f types.PCMFormat, p []byte, v float64) {
+	switch f {
+	case types.PCMFormatU8:
+		p[0] = byte(math.Round(v*128 + 128))
+	case types.PCMFormatS16LE:
+		binary.LittleEndian.PutUint16(p, uint16(int16(math.Round(v*32768))))
+	case types.PCMFormatS16BE:
+		binary.BigEndian.PutUint16(p, uint16(int16(math.Round(v*32768))))
+	case types.PCMFormatS24LE:
+		val := int32(math.Round(v * 8388608))
+		if val > 8388607 {
+			val = 8388607
+		}
+		if val < -8388608 {
+			val = -8388608
+		}
+		p[0] = byte(val)
+		p[1] = byte(val >> 8)
+		p[2] = byte(val >> 16)
+	case types.PCMFormatS24BE:
+		val := int32(math.Round(v * 8388608))
+		if val > 8388607 {
+			val = 8388607
+		}
+		if val < -8388608 {
+			val = -8388608
+		}
+		p[0] = byte(val >> 16)
+		p[1] = byte(val >> 8)
+		p[2] = byte(val)
+	case types.PCMFormatS32LE:
+		binary.LittleEndian.PutUint32(p, uint32(int32(math.Round(v*2147483648))))
+	case types.PCMFormatS32BE:
+		binary.BigEndian.PutUint32(p, uint32(int32(math.Round(v*2147483648))))
+	case types.PCMFormatS64LE:
+		binary.LittleEndian.PutUint64(p, uint64(int64(math.Round(v*9223372036854775808))))
+	case types.PCMFormatS64BE:
+		binary.BigEndian.PutUint64(p, uint64(int64(math.Round(v*9223372036854775808))))
+	case types.PCMFormatFloat32LE:
+		binary.LittleEndian.PutUint32(p, math.Float32bits(float32(v)))
+	case types.PCMFormatFloat32BE:
+		binary.BigEndian.PutUint32(p, math.Float32bits(float32(v)))
+	case types.PCMFormatFloat64LE:
+		binary.LittleEndian.PutUint64(p, math.Float64bits(v))
+	case types.PCMFormatFloat64BE:
+		binary.BigEndian.PutUint64(p, math.Float64bits(v))
+	default:
+		panic(fmt.Sprintf("unknown format: %v", f))
+	}
 }
 
 var _ io.Reader = (*Resampler)(nil)
@@ -111,18 +171,26 @@ func (r *Resampler) init() error {
 	sampleRateAdjust := float64(r.outFormat.SampleRate) / float64(r.inFormat.SampleRate)
 	r.outDistanceStep = uint64(float64(distanceStep) / sampleRateAdjust)
 
-	r.convert = pcmSampleConvertMap[r.inFormat.PCMFormat][r.outFormat.PCMFormat]
-	if r.convert == nil {
-		return fmt.Errorf("unable to get a convert function from %s to %s", r.inFormat.PCMFormat, r.outFormat.PCMFormat)
-	}
+	r.inDistance = 0
+	r.outDistance = 0
+
 	return nil
 }
 
 func (r *Resampler) Read(p []byte) (int, error) {
 	r.locker.Lock()
 	defer r.locker.Unlock()
-	chunksToRead := uint64(len(p)) / uint64(r.outSampleSize) / uint64(r.outNumRepeat) * uint64(r.inFormat.SampleRate) / uint64(r.outFormat.SampleRate)
-	bytesToRead := uint64(chunksToRead) * uint64(r.inSampleSize)
+
+	maxOutChunks := uint64(len(p)) / uint64(r.outSampleSize) / uint64(r.outNumRepeat)
+	if maxOutChunks == 0 {
+		return 0, nil
+	}
+
+	chunksToRead := uint64(float64(maxOutChunks) * float64(r.inFormat.SampleRate) / float64(r.outFormat.SampleRate))
+	if chunksToRead == 0 {
+		chunksToRead = 1
+	}
+	bytesToRead := uint64(chunksToRead) * uint64(r.inSampleSize) * uint64(r.inNumAvg)
 	if cap(r.buffer) < int(bytesToRead) {
 		r.buffer = make([]byte, bytesToRead)
 	} else {
@@ -131,44 +199,44 @@ func (r *Resampler) Read(p []byte) (int, error) {
 	n, err := r.inReader.Read(r.buffer)
 	r.buffer = r.buffer[:n]
 
-	if n%int(r.inSampleSize) != 0 {
-		return 0, fmt.Errorf("read a number of bytes that is not a multiple of %d: %w", r.inSampleSize, err)
+	if n > 0 && n%int(r.inSampleSize*r.inNumAvg) != 0 {
+		return 0, fmt.Errorf("read a number of bytes (%d) that is not a multiple of %d", n, r.inSampleSize*r.inNumAvg)
 	}
-	chunksToWrite := uint64(n) / uint64(r.inSampleSize) / uint64(r.inNumAvg) * uint64(r.outFormat.SampleRate) / uint64(r.inFormat.SampleRate)
+	chunksRead := uint64(n) / uint64(r.inSampleSize) / uint64(r.inNumAvg)
 
-	for srcChunkIdx, dstChunkIdx := uint64(0), uint64(0); dstChunkIdx < chunksToWrite; {
-		for int64(r.inDistance) < int64(r.outDistance)-int64(r.outDistanceStep) {
+	dstChunkIdx := uint64(0)
+	srcChunkIdx := uint64(0)
+	for srcChunkIdx < chunksRead && dstChunkIdx < maxOutChunks {
+		// If we are too far ahead in input distance, skip input samples
+		for r.inDistance < r.outDistance && srcChunkIdx < chunksRead {
 			srcChunkIdx++
 			r.inDistance += distanceStep
 		}
-
-		// TODO: It is assumed that r.inNumAvg == 1 (see `init()`), so we omit
-		//       averaging the value, yet. Fix this.
-		idxSrc := srcChunkIdx * uint64(r.inSampleSize) * uint64(r.inNumAvg)
-		for repeatIdx := uint64(0); repeatIdx < uint64(r.outNumRepeat); repeatIdx++ {
-			idxDst := uint64((dstChunkIdx*uint64(r.outNumRepeat) + repeatIdx) * uint64(r.outSampleSize))
-
-			src := r.buffer[idxSrc:]
-			dst := p[idxDst:]
-			r.convert(dst, src)
+		if srcChunkIdx >= chunksRead {
+			break
 		}
 
-		prevIdxDst := uint64(dstChunkIdx) * uint64(r.outNumRepeat) * uint64(r.outSampleSize)
-		for r.inDistance > r.outDistance+r.outDistanceStep {
+		// Read input sample
+		idxSrc := srcChunkIdx * uint64(r.inSampleSize) * uint64(r.inNumAvg)
+		var sum float64
+		for channelIdx := uint64(0); channelIdx < uint64(r.inNumAvg); channelIdx++ {
+			sum += getFloat64(r.inFormat.PCMFormat, r.buffer[idxSrc+channelIdx*uint64(r.inSampleSize):])
+		}
+		val := sum / float64(r.inNumAvg)
+
+		// Write output sample (possibly repeated)
+		for dstChunkIdx < maxOutChunks && r.outDistance <= r.inDistance {
+			for repeatIdx := uint64(0); repeatIdx < uint64(r.outNumRepeat); repeatIdx++ {
+				idxDst := (dstChunkIdx*uint64(r.outNumRepeat) + repeatIdx) * uint64(r.outSampleSize)
+				setFloat64(r.outFormat.PCMFormat, p[idxDst:], val)
+			}
 			dstChunkIdx++
 			r.outDistance += r.outDistanceStep
-			idxDst := uint64(dstChunkIdx) * uint64(r.outNumRepeat) * uint64(r.outSampleSize)
-			src := p[prevIdxDst:idxDst]
-			dst := p[idxDst:]
-			copy(dst, src)
-			prevIdxDst = idxDst
 		}
 
 		srcChunkIdx++
 		r.inDistance += distanceStep
-
-		dstChunkIdx++
-		r.outDistance += r.outDistanceStep
 	}
-	return int(chunksToWrite * uint64(r.outSampleSize) * uint64(r.outNumRepeat)), err
+
+	return int(dstChunkIdx * uint64(r.outSampleSize) * uint64(r.outNumRepeat)), err
 }

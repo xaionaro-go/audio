@@ -68,7 +68,7 @@ func NewNoiseSuppressionStream(
 		noiseSuppressionOutputProgressedCh: make(chan struct{}),
 		outputProgressedCh:                 make(chan struct{}),
 	}
-	observability.Go(ctx, func() {
+	observability.Go(ctx, func(ctx context.Context) {
 		defer cancelFunc()
 		err := s.readerLoop(ctx, input)
 		s.inputBufferLocker.Lock()
@@ -77,7 +77,7 @@ func NewNoiseSuppressionStream(
 			s.resultError = fmt.Errorf("got an error from the reader loop: %w", err)
 		}
 	})
-	observability.Go(ctx, func() {
+	observability.Go(ctx, func(ctx context.Context) {
 		defer cancelFunc()
 		err = s.noiseSuppressionLoop(ctx)
 		s.inputBufferLocker.Lock()

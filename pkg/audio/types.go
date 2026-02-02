@@ -13,7 +13,7 @@ type RecordStream = types.RecordStream
 type PCMFormat = types.PCMFormat
 
 const (
-	PCMFormatUndefined = types.PCMFormatUndefined
+	UndefinedPCMFormat = types.UndefinedPCMFormat
 	PCMFormatU8        = types.PCMFormatU8
 	PCMFormatS16LE     = types.PCMFormatS16LE
 	PCMFormatS16BE     = types.PCMFormatS16BE

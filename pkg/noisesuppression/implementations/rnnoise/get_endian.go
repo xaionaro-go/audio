@@ -1,11 +1,13 @@
 package rnnoise
 
-import "encoding/binary"
+import (
+	"encoding/binary"
+)
 
 type endian int
 
 const (
-	endianUndefined = endian(iota)
+	undefinedEndian = endian(iota)
 	endianBig
 	endianLittle
 )
@@ -18,5 +20,5 @@ func getEndian() endian {
 	case 0x0201:
 		return endianLittle
 	}
-	return endianUndefined
+	return undefinedEndian
 }

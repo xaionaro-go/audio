@@ -25,7 +25,7 @@ type PlayerPCM interface {
 type PCMFormat uint
 
 const (
-	PCMFormatUndefined = PCMFormat(iota)
+	UndefinedPCMFormat = PCMFormat(iota)
 	PCMFormatU8
 	PCMFormatS16LE
 	PCMFormatS16BE
@@ -44,7 +44,7 @@ const (
 
 func (f PCMFormat) Size() uint32 {
 	switch f {
-	case PCMFormatUndefined:
+	case UndefinedPCMFormat:
 		return math.MaxUint32
 	case PCMFormatU8:
 		return 1
@@ -63,7 +63,7 @@ func (f PCMFormat) Size() uint32 {
 
 func (f PCMFormat) String() string {
 	switch f {
-	case PCMFormatUndefined:
+	case UndefinedPCMFormat:
 		return "<undefined>"
 	case PCMFormatS16LE:
 		return "s16le"
@@ -76,12 +76,12 @@ func (f PCMFormat) String() string {
 
 func PCMFormatFromString(in string) PCMFormat {
 	in = strings.ToLower(in)
-	for fmt := PCMFormatUndefined + 1; fmt < EndOfPCMFormat; fmt++ {
+	for fmt := UndefinedPCMFormat + 1; fmt < EndOfPCMFormat; fmt++ {
 		if strings.ToLower(fmt.String()) == in {
 			return fmt
 		}
 	}
-	return PCMFormatUndefined
+	return UndefinedPCMFormat
 }
 
 type SampleRate uint32
